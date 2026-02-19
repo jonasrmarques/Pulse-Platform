@@ -91,3 +91,45 @@ async function handleLogout(event) {
     }
 }
 
+
+
+window.sendMessage = async function () {
+    const input = document.getElementById("chatInput");
+    const messages = document.getElementById("chatMessages");
+
+    const text = input.value.trim();
+    if (!text) return;
+
+    messages.innerHTML += `<div class="mb-2 text-end"><strong>Você:</strong> ${text}</div>`;
+    input.value = "";
+
+    const response = await fetch("/api/chatbot/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify({ message: text })
+    });
+
+    const data = await response.json();
+
+    messages.innerHTML += `<div class="mb-2"><strong>Pulse:</strong> ${data.reply}</div>`;
+    messages.scrollTop = messages.scrollHeight;
+};
+
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + "=")) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}

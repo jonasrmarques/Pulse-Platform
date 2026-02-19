@@ -250,3 +250,32 @@ body {
         font-size: 14px;
     }
 }
+
+/* Botão flutuante do chatbot */
+.chatbot-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 26px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    z-index: 1050; /* acima do conteúdo */
+}
+
+/* Efeito hover */
+.chatbot-btn:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}
+
+/* Ajuste do ícone */
+.chatbot-btn i {
+    margin: 0;
+}

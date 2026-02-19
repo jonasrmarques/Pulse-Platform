@@ -22,6 +22,37 @@
         <main class="content">
             {% block content %}{% endblock %}
         </main>
+
+
+        <!-- Botão flutuante -->
+        <button class="btn btn-primary chatbot-btn" data-bs-toggle="modal" data-bs-target="#chatbotModal">
+            <i class="fas fa-robot"></i>
+        </button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="chatbotModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Assistente Pulse</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body" id="chatMessages" style="height:400px; overflow-y:auto;">
+                    </div>
+
+                    <div class="modal-footer">
+                        <input type="text" id="chatInput" class="form-control" placeholder="Digite sua mensagem...">
+                        <button class="btn btn-primary" onclick="sendMessage()">Enviar</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
     </div>
     {% endblock %}
 
