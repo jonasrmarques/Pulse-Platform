@@ -198,7 +198,7 @@ body {
 /**Área do Centro**/
 .content {
     flex: 1;
-    padding: 32px;
+    /* padding: 32px; */
     background: #f8fafc;
     transition: margin-left 0.3s ease;
     overflow-y: auto;
@@ -206,9 +206,9 @@ body {
 }
 
 /* Ajustes quando sidebar está recolhida */
-.sidebar.collapsed ~ .content {
+/* .sidebar.collapsed ~ .content {
     margin-left: 70px;
-}
+} */
 
 .btn-login {
     background: linear-gradient(90deg, #6366f1, #22d3ee);

@@ -1,0 +1,1141 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Bater Ponto · TimeTracker{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --primary: #4361ee;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --dark: #1e293b;
+    --gray: #64748b;
+    --light: #f8fafc;
+    --border: #e2e8f0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100vh;
+    overflow: hidden;
+}
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.ponto-wrapper {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.ponto-card-horizontal {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 40px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 1200px;
+    padding: 2rem;
+    display: flex;
+    gap: 2rem;
+    transition: transform 0.3s ease;
+}
+
+.ponto-card-horizontal:hover {
+    transform: translateY(-4px);
+}
+
+.coluna-esquerda {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.ponto-header {
+    text-align: left;
+    margin-bottom: 0.5rem;
+}
+
+.ponto-header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.data-atual {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.2rem;
+    background: var(--light);
+    border-radius: 100px;
+    color: var(--gray);
+    font-size: 1rem;
+    font-weight: 500;
+    border: 1px solid var(--border);
+}
+
+.data-atual i {
+    color: var(--primary);
+}
+
+.relogio-container {
+    background: linear-gradient(135deg, var(--dark) 0%, #0f172a 100%);
+    border-radius: 30px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.3);
+}
+
+.relogio-container .label {
+    color: #94a3b8;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.relogio-container .label i {
+    margin-right: 0.5rem;
+}
+
+.hora-atual {
+    font-size: 5rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 4px;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.botao-ponto {
+    width: 100%;
+    padding: 2rem;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    box-shadow: 0 15px 30px -8px rgba(67, 97, 238, 0.4);
+}
+
+.botao-ponto i {
+    font-size: 2rem;
+    transition: transform 0.3s ease;
+}
+
+.botao-ponto:hover i {
+    transform: translateX(8px) scale(1.1);
+}
+
+.botao-ponto:active {
+    transform: scale(0.98);
+}
+
+.botao-entrada {
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: white;
+}
+
+.botao-saida {
+    background: linear-gradient(135deg, var(--danger), #dc2626);
+    color: white;
+}
+
+.botao-ponto:disabled {
+    background: linear-gradient(135deg, var(--gray), #475569);
+    box-shadow: none;
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+.botao-historico {
+    width: 100%;
+    padding: 1.2rem;
+    border: 2px solid var(--primary);
+    border-radius: 20px;
+    background: white;
+    color: var(--primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.botao-historico:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(67, 97, 238, 0.3);
+}
+
+.botao-historico i {
+    font-size: 1.3rem;
+}
+
+.coluna-direita {
+    flex: 1;
+    background: white;
+    border-radius: 30px;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+.info-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 3px solid var(--border);
+}
+
+.info-header i {
+    font-size: 1.5rem;
+    color: var(--primary);
+    background: var(--light);
+    padding: 0.8rem;
+    border-radius: 16px;
+}
+
+.info-header h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0;
+}
+
+.info-grid-horizontal {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+    flex: 1;
+}
+
+.info-item-large {
+    background: var(--light);
+    border-radius: 20px;
+    padding: 1.5rem 1.2rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.info-item-large:hover {
+    background: white;
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -10px rgba(67, 97, 238, 0.2);
+}
+
+.info-icon-large {
+    width: 60px;
+    height: 60px;
+    background: white;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1.2rem;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+}
+
+.info-icon-large i {
+    font-size: 1.8rem;
+    color: var(--primary);
+}
+
+.info-content-large {
+    flex: 1;
+}
+
+.info-label-large {
+    font-size: 0.9rem;
+    color: var(--gray);
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value-large {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1.2;
+}
+
+.status-badge {
+    display: inline-block !important;
+    padding: 0.4rem 1.2rem !important;
+    border-radius: 100px !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+}
+
+.status-regular {
+    color: var(--success) !important;
+    background: rgba(16, 185, 129, 0.15) !important;
+}
+
+.status-extra {
+    color: var(--warning) !important;
+    background: rgba(245, 158, 11, 0.15) !important;
+}
+
+.status-irregular {
+    color: var(--danger) !important;
+    background: rgba(239, 68, 68, 0.15) !important;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background: white;
+    margin: 5% auto;
+    padding: 2rem;
+    border-radius: 30px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 3px solid var(--border);
+}
+
+.modal-header h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.modal-header h2 i {
+    color: var(--primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 2.5rem;
+    cursor: pointer;
+    color: var(--gray);
+    transition: all 0.3s ease;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: var(--danger);
+    transform: scale(1.1);
+}
+
+.modal-filtros {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.filtro-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filtro-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.filtro-select {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.filtro-select:hover {
+    border-color: var(--primary);
+}
+
+.filtro-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.btn-filtrar {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-end;
+}
+
+.btn-filtrar:hover {
+    background: var(--dark);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(67, 97, 238, 0.3);
+}
+
+.resumo-periodo {
+    background: linear-gradient(135deg, var(--primary), #764ba2);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.resumo-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.resumo-item .label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.resumo-item .value {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.tabela-registros {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabela-registros th {
+    background: var(--light);
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--dark);
+    border-bottom: 3px solid var(--primary);
+}
+
+.tabela-registros td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--gray);
+}
+
+.tabela-registros tbody tr:hover {
+    background: var(--light);
+    cursor: pointer;
+}
+
+.tabela-registros tbody tr.selected {
+    background: rgba(67, 97, 238, 0.1);
+    border-left: 4px solid var(--primary);
+}
+
+.status-cell {
+    display: inline-block;
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.status-regular-cell {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+}
+
+.status-extra-cell {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--warning);
+}
+
+.status-irregular-cell {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 3rem;
+}
+
+.loading-spinner i {
+    font-size: 3rem;
+    color: var(--primary);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@media (max-width: 968px) {
+    .ponto-card-horizontal {
+        flex-direction: column;
+        max-width: 600px;
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+    
+    .hora-atual {
+        font-size: 4rem;
+    }
+    
+    .info-grid-horizontal {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        margin: 2% auto;
+        width: 95%;
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .ponto-wrapper {
+        padding: 1rem;
+    }
+    
+    .ponto-card-horizontal {
+        padding: 1.5rem;
+    }
+    
+    .hora-atual {
+        font-size: 3rem;
+    }
+    
+    .botao-ponto {
+        padding: 1.5rem;
+        font-size: 1.2rem;
+    }
+    
+    .botao-historico {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+    
+    .info-icon-large {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .info-icon-large i {
+        font-size: 1.5rem;
+    }
+    
+    .info-value-large {
+        font-size: 1.2rem;
+    }
+    
+    .resumo-periodo {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .resumo-item .value {
+        font-size: 1.4rem;
+    }
+    
+    .tabela-registros {
+        font-size: 0.9rem;
+    }
+    
+    .tabela-registros th,
+    .tabela-registros td {
+        padding: 0.8rem 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ponto-wrapper">
+    <div class="ponto-card-horizontal">
+        <div class="coluna-esquerda">
+            <div class="ponto-header">
+                <h1>
+                    <i class="fas fa-clock me-2" style="color: var(--primary);"></i>
+                    Bater Ponto
+                </h1>
+                <div class="data-atual">
+                    <i class="far fa-calendar-alt"></i>
+                    {{ data_hoje }}
+                </div>
+            </div>
+
+            <div class="relogio-container">
+                <span class="label">
+                    <i class="far fa-clock"></i>
+                    HORA ATUAL
+                </span>
+                <div id="horaAtual" class="hora-atual">
+                    --
+                </div>
+            </div>
+
+            <div class="ponto-actions">
+                <button id="botaoPonto" class="botao-ponto botao-entrada">
+                    <i class="fas fa-fingerprint"></i>
+                    Registrar Entrada
+                </button>
+            </div>
+
+            <button id="btnHistorico" class="botao-historico">
+                <i class="fas fa-history"></i>
+                Ver Histórico de Pontos
+            </button>
+        </div>
+
+        <div class="coluna-direita">
+            <div class="info-header">
+                <i class="fas fa-chart-pie"></i>
+                <h3>Resumo do Dia</h3>
+            </div>
+            
+            <div id="infoPonto" class="info-grid-horizontal">
+                <div class="info-item-large" style="grid-column: span 2;">
+                    <div class="info-icon-large">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="info-content-large">
+                        <div class="info-label-large">Status do Dia</div>
+                        <div class="info-value-large">
+                            <span id="statusTexto" class="status-badge status-regular">---</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-item-large">
+                    <div class="info-icon-large">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <div class="info-content-large">
+                        <div class="info-label-large">Entrada</div>
+                        <div class="info-value-large" id="entradaTexto">---</div>
+                    </div>
+                </div>
+
+                <div class="info-item-large">
+                    <div class="info-icon-large">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <div class="info-content-large">
+                        <div class="info-label-large">Saída</div>
+                        <div class="info-value-large" id="saidaTexto">---</div>
+                    </div>
+                </div>
+
+                <div class="info-item-large" style="grid-column: span 2;">
+                    <div class="info-icon-large">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div class="info-content-large">
+                        <div class="info-label-large">Total Trabalhado Hoje</div>
+                        <div class="info-value-large" id="totalTexto">---</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalHistorico" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-history"></i> Histórico de Pontos</h2>
+            <button class="modal-close" id="closeModal">&times;</button>
+        </div>
+        
+        <div class="modal-filtros">
+            <div class="filtro-group">
+                <label for="mesSelect">Mês:</label>
+                <select id="mesSelect" class="filtro-select">
+                    <option value="1">Janeiro</option>
+                    <option value="2">Fevereiro</option>
+                    <option value="3">Março</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Maio</option>
+                    <option value="6">Junho</option>
+                    <option value="7">Julho</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+            </div>
+            
+            <div class="filtro-group">
+                <label for="anoSelect">Ano:</label>
+                <select id="anoSelect" class="filtro-select">
+                </select>
+            </div>
+            
+            <button id="btnFiltrar" class="btn-filtrar">
+                <i class="fas fa-search"></i> Filtrar
+            </button>
+        </div>
+
+        <div id="resumoPeriodo" class="resumo-periodo" style="display: none;">
+            <div class="resumo-item">
+                <span class="label">Total de dias</span>
+                <span class="value" id="totalDias">0</span>
+            </div>
+            <div class="resumo-item">
+                <span class="label">Total horas</span>
+                <span class="value" id="totalHoras">00:00</span>
+            </div>
+            <div class="resumo-item">
+                <span class="label">Média diária</span>
+                <span class="value" id="mediaDiaria">00:00</span>
+            </div>
+        </div>
+
+        <div class="tabela-container">
+            <table class="tabela-registros">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Entrada</th>
+                        <th>Saída</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaRegistrosBody">
+                    <tr>
+                        <td colspan="5" class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Carregando registros...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function atualizarRelogio() {
+    const agora = new Date();
+    const hora = agora.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+    document.getElementById("horaAtual").innerText = hora;
+}
+
+function formatarStatus(status) {
+    const statusSpan = document.getElementById("statusTexto");
+    statusSpan.innerText = status || 'Não iniciado';
+    
+    statusSpan.classList.remove('status-regular', 'status-extra', 'status-irregular', 'status-badge');
+    statusSpan.classList.add('status-badge');
+    
+    if (status) {
+        const statusLower = status.toLowerCase();
+        if (statusLower.includes('regular')) {
+            statusSpan.classList.add('status-regular');
+        } else if (statusLower.includes('extra')) {
+            statusSpan.classList.add('status-extra');
+        } else if (statusLower.includes('irregular')) {
+            statusSpan.classList.add('status-irregular');
+        }
+    }
+}
+
+function setLoading(isLoading) {
+    const botao = document.getElementById("botaoPonto");
+    if (isLoading) {
+        botao.classList.add('loading');
+        botao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+    } else {
+        botao.classList.remove('loading');
+    }
+}
+
+function atualizarInterfacePonto(data) {
+    const botao = document.getElementById("botaoPonto");
+    
+    if (data.existe === false) {
+        botao.innerHTML = '<i class="fas fa-fingerprint"></i> Registrar Entrada';
+        botao.classList.add("botao-entrada");
+        botao.classList.remove("botao-saida");
+        botao.disabled = false;
+        
+        formatarStatus(null);
+        document.getElementById("entradaTexto").innerText = '---';
+        document.getElementById("saidaTexto").innerText = '---';
+        document.getElementById("totalTexto").innerText = '---';
+        return;
+    }
+    
+    if (data.horario_entrada && !data.horario_saida) {
+        botao.innerHTML = '<i class="fas fa-sign-out-alt"></i> Registrar Saída';
+        botao.classList.remove("botao-entrada");
+        botao.classList.add("botao-saida");
+        botao.disabled = false;
+    } else if (data.horario_entrada && data.horario_saida) {
+        botao.innerHTML = '<i class="fas fa-check-circle"></i> Ponto Finalizado';
+        botao.disabled = true;
+        botao.classList.remove("botao-saida", "botao-entrada");
+    } else {
+        botao.innerHTML = '<i class="fas fa-fingerprint"></i> Registrar Entrada';
+        botao.classList.add("botao-entrada");
+        botao.classList.remove("botao-saida");
+        botao.disabled = false;
+    }
+    
+    formatarStatus(data.status);
+    document.getElementById("entradaTexto").innerText = data.horario_entrada || '---';
+    document.getElementById("saidaTexto").innerText = data.horario_saida || '---';
+    document.getElementById("totalTexto").innerText = data.horas_trabalhadas || '---';
+}
+
+function carregarStatusPontoHoje() {
+    document.getElementById("entradaTexto").innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    document.getElementById("saidaTexto").innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    document.getElementById("totalTexto").innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    fetch("/api-registro-ponto/ponto-hoje/", {
+        method: "GET",
+        credentials: "same-origin",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache"
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro na resposta da API');
+        }
+        return response.json();
+    })
+    .then(data => {
+        atualizarInterfacePonto(data);
+    })
+    .catch(error => {
+        console.error("Erro ao carregar status:", error);
+        document.getElementById("entradaTexto").innerText = '---';
+        document.getElementById("saidaTexto").innerText = '---';
+        document.getElementById("totalTexto").innerText = '---';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    carregarStatusPontoHoje();
+    atualizarRelogio();
+    setInterval(atualizarRelogio, 1000);
+    setInterval(carregarStatusPontoHoje, 30000);
+});
+
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        carregarStatusPontoHoje();
+    }
+});
+
+document.getElementById("botaoPonto").addEventListener("click", function() {
+    setLoading(true);
+    
+    fetch("/api-registro-ponto/bater-ponto/", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        setLoading(false);
+        
+        if (data.detail) {
+            alert(data.detail);
+            return;
+        }
+        
+        atualizarInterfacePonto(data);
+        
+        const botao = document.getElementById("botaoPonto");
+        botao.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            botao.style.transform = 'scale(1)';
+        }, 200);
+    })
+    .catch(error => {
+        setLoading(false);
+        console.error("Erro:", error);
+        
+        const botao = document.getElementById("botaoPonto");
+        botao.style.backgroundColor = '#ef4444';
+        setTimeout(() => {
+            botao.style.backgroundColor = '';
+        }, 500);
+        
+        alert("Erro ao registrar ponto. Tente novamente.");
+    });
+});
+
+document.querySelectorAll('.info-item-large').forEach(item => {
+    item.addEventListener('click', function() {
+        this.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+            this.style.transform = 'scale(1)';
+        }, 200);
+    });
+});
+
+const modal = document.getElementById('modalHistorico');
+const btnHistorico = document.getElementById('btnHistorico');
+const closeModal = document.getElementById('closeModal');
+const mesSelect = document.getElementById('mesSelect');
+const anoSelect = document.getElementById('anoSelect');
+const btnFiltrar = document.getElementById('btnFiltrar');
+const tabelaBody = document.getElementById('tabelaRegistrosBody');
+const resumoPeriodo = document.getElementById('resumoPeriodo');
+
+function preencherAnos() {
+    const anoAtual = new Date().getFullYear();
+    for (let ano = anoAtual; ano >= anoAtual - 2; ano--) {
+        const option = document.createElement('option');
+        option.value = ano;
+        option.textContent = ano;
+        anoSelect.appendChild(option);
+    }
+}
+
+btnHistorico.addEventListener('click', () => {
+    modal.style.display = 'block';
+    const hoje = new Date();
+    mesSelect.value = hoje.getMonth() + 1;
+    preencherAnos();
+    carregarRegistros();
+});
+
+closeModal.addEventListener('click', () => {
+    modal.style.display = 'none';
+});
+
+window.addEventListener('click', (event) => {
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+
+btnFiltrar.addEventListener('click', () => {
+    carregarRegistros();
+});
+
+function formatarTempo(minutos) {
+    if (!minutos && minutos !== 0) return '00:00';
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    return `${horas.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+
+function calcularTotalHoras(registros) {
+    let totalMinutos = 0;
+    registros.forEach(reg => {
+        if (reg.minutos_trabalhados) {
+            totalMinutos += reg.minutos_trabalhados;
+        }
+    });
+    return formatarTempo(totalMinutos);
+}
+
+function carregarRegistros() {
+    const mes = mesSelect.value;
+    const ano = anoSelect.value;
+    
+    tabelaBody.innerHTML = `
+        <tr>
+            <td colspan="5" class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando registros...</p>
+            </td>
+        </tr>
+    `;
+    resumoPeriodo.style.display = 'none';
+    
+    fetch(`/api-registro-ponto/historico/?tipo=mensal&mes=${mes}&ano=${ano}`, {
+        method: "GET",
+        credentials: "same-origin",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.registros && data.registros.length > 0) {
+            document.getElementById('totalDias').textContent = data.total_registros || data.registros.length;
+            document.getElementById('totalHoras').textContent = data.estatisticas?.total_horas || calcularTotalHoras(data.registros);
+            document.getElementById('mediaDiaria').textContent = data.estatisticas?.media_diaria || '00:00';
+            resumoPeriodo.style.display = 'flex';
+            
+            let html = '';
+            data.registros.forEach(reg => {
+                let statusClass = 'status-regular-cell';
+                if (reg.status_class === 'extra') {
+                    statusClass = 'status-extra-cell';
+                } else if (reg.status_class === 'irregular') {
+                    statusClass = 'status-irregular-cell';
+                }
+                
+                html += `
+                    <tr onclick="selecionarRegistro(this)" data-id="${reg.id}">
+                        <td>${reg.data} (${reg.dia_semana})</td>
+                        <td>${reg.entrada || '---'}</td>
+                        <td>${reg.saida || '---'}</td>
+                        <td>${reg.total || '---'}</td>
+                        <td><span class="status-cell ${statusClass}">${reg.status || '---'}</span></td>
+                    </tr>
+                `;
+            });
+            tabelaBody.innerHTML = html;
+        } else {
+            tabelaBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 3rem; color: var(--gray);">
+                        <i class="fas fa-calendar-times" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                        Nenhum registro encontrado para ${mesSelect.options[mesSelect.selectedIndex].text} de ${ano}
+                    </td>
+                </tr>
+            `;
+            resumoPeriodo.style.display = 'none';
+        }
+    })
+    .catch(error => {
+        console.error("Erro ao carregar registros:", error);
+        tabelaBody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 3rem; color: var(--danger);">
+                    <i class="fas fa-exclamation-circle" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                    Erro ao carregar registros. Tente novamente.
+                </td>
+            </tr>
+        `;
+        resumoPeriodo.style.display = 'none';
+    });
+}
+
+function selecionarRegistro(linha) {
+    document.querySelectorAll('.tabela-registros tbody tr').forEach(tr => {
+        tr.classList.remove('selected');
+    });
+    linha.classList.add('selected');
+}
+</script>
+{% endblock %}

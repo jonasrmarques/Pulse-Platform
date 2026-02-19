@@ -13,4 +13,8 @@ urlpatterns = [
     #Views de Users
     path('users/', include('users.urls')),
     path("api-users/", include("users.api.urls")),
+
+    # Views de Registro de Ponto
+    path('registro-ponto/', include('registro_ponto.urls')),
+    path('api-registro-ponto/', include('registro_ponto.api.urls')),
 ]

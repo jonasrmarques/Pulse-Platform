@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'main',
     'users',
     'enterprise',
+    'registro_ponto',
 ]
 
 REST_FRAMEWORK = {
@@ -133,11 +134,11 @@ AUTH_USER_MODEL = "users.User"
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
 USE_TZ = True
+TIME_ZONE = "America/Sao_Paulo"
 
 
 # Static files (CSS, JavaScript, Images)
