@@ -10,7 +10,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from groq import Groq
 from registro_ponto.models import RegistroPonto
-
+from django.utils import timezone
 
 
 class LoginAPIView(APIView):
@@ -70,6 +70,7 @@ class PulseChatbotView(APIView):
 
     def post(self, request):
         message = request.data.get("message")
+        today = timezone.localdate()
 
         if not message:
             return Response(
@@ -79,7 +80,6 @@ class PulseChatbotView(APIView):
 
         user = request.user
 
-        # 🔹 Busca SOMENTE os pontos do usuário logado
         registros = RegistroPonto.objects.filter(usuario=user).order_by("-data")[:30]
 
         if not registros.exists():
@@ -95,20 +95,22 @@ class PulseChatbotView(APIView):
                 for r in registros
             ])
 
-        # 🔒 Prompt com regras fortes
+        #Regras
         system_prompt = f"""
-Você é o assistente da plataforma Pulse.
+                        Você é o assistente da plataforma Pulse.
+                        DATA ATUAL:
+                        Hoje é {today}.
 
-REGRAS OBRIGATÓRIAS:
-- Responda SOMENTE com base nos registros de ponto fornecidos.
-- NÃO invente dados.
-- NÃO responda perguntas fora do contexto de ponto.
-- Se a pergunta não tiver relação com ponto, diga:
-  "Só posso responder perguntas sobre seus registros de ponto."
+                        REGRAS OBRIGATÓRIAS:
+                        - Responda SOMENTE com base nos registros de ponto fornecidos.
+                        - NÃO invente dados.
+                        - NÃO responda perguntas fora do contexto de ponto.
+                        - Se a pergunta não tiver relação com ponto, diga:
+                        "Só posso responder perguntas sobre seus registros de ponto."
 
-REGISTROS DE PONTO DO USUÁRIO:
-{contexto_pontos}
-"""
+                        REGISTROS DE PONTO DO USUÁRIO:
+                        {contexto_pontos}
+                        """
 
         try:
             client = Groq(api_key=settings.GROQ_API_KEY)
