@@ -2,10 +2,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
+from registro_ponto.api.serializers import DashboardResumoSerializer
 from registro_ponto.models import RegistroPonto
 from registro_ponto.utils import calcular_horas_trabalhadas
 from datetime import datetime, timedelta
 import calendar
+from django.contrib.auth import get_user_model
+from django.db.models import Count
+
+
+User = get_user_model()
 
 class BaterPontoAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -413,3 +419,125 @@ class HistoricoPontosAPIView(APIView):
         dias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
         return dias[dia_idx]
     
+
+class DashboardResumoAPIView(APIView):
+
+    def get(self, request):
+        hoje = timezone.now().date()
+        
+        total_usuarios = User.objects.count()
+        registros_hoje = RegistroPonto.objects.filter(data=hoje).count()
+        horas_extras = RegistroPonto.objects.filter(status='hora_extra').count()
+        faltas = RegistroPonto.objects.filter(status='falta').count()
+        
+        status_counts = RegistroPonto.objects.values('status').annotate(
+            quantidade=Count('id')
+        )
+        
+        status_map = {
+            'horario_regular': 'Horário Regular',
+            'hora_extra': 'Hora Extra',
+            'horario_irregular': 'Horário Irregular',
+            'falta': 'Falta'
+        }
+        
+        status_distribuicao = []
+        for item in status_counts:
+            status_distribuicao.append({
+                'status': status_map.get(item['status'], item['status']),
+                'quantidade': item['quantidade']
+            })
+        
+        ultimos_7_dias = []
+        labels_7_dias = []
+        
+        for i in range(6, -1, -1):
+            data = hoje - timedelta(days=i)
+            labels_7_dias.append(data.strftime('%d/%m'))
+            count = RegistroPonto.objects.filter(data=data).count()
+            ultimos_7_dias.append(count)
+        
+        horas_extras_7_dias = []
+        faltas_7_dias = []
+        
+        for i in range(6, -1, -1):
+            data = hoje - timedelta(days=i)
+            horas_extras_7_dias.append(
+                RegistroPonto.objects.filter(data=data, status='hora_extra').count()
+            )
+            faltas_7_dias.append(
+                RegistroPonto.objects.filter(data=data, status='falta').count()
+            )
+        
+        top_usuarios = RegistroPonto.objects.values(
+            'usuario__name', 'usuario__email'
+        ).annotate(
+            total_registros=Count('id')
+        ).order_by('-total_registros')[:5]
+        
+        top_usuarios_list = []
+        for user in top_usuarios:
+            top_usuarios_list.append({
+                'nome': user['usuario__name'] or user['usuario__email'],
+                'email': user['usuario__email'],
+                'total': user['total_registros']
+            })
+        
+        registros = RegistroPonto.objects.select_related('usuario').all().order_by('-data', '-horario_entrada')[:100]
+        
+        registros_lista = []
+        for registro in registros:
+            
+            status_display = {
+                'horario_regular': 'presente',
+                'hora_extra': 'extra',
+                'horario_irregular': 'atrasado',
+                'falta': 'ausente'
+            }.get(registro.status, 'presente')
+            
+            horas_trabalhadas = '0'
+            if registro.horario_entrada and registro.horario_saida:
+                horas_trabalhadas = '8'
+            
+            registros_lista.append({
+                'usuario': registro.usuario.name or registro.usuario.email,
+                'email': registro.usuario.email,
+                'data': registro.data.isoformat(),
+                'entrada': registro.horario_entrada.strftime('%H:%M') if registro.horario_entrada else '--:--',
+                'saida': registro.horario_saida.strftime('%H:%M') if registro.horario_saida else '--:--',
+                'horas_trabalhadas': horas_trabalhadas,
+                'status': status_display.capitalize()
+            })
+        
+        data = {
+            "total_usuarios": total_usuarios,
+            "registros_hoje": registros_hoje,
+            "horas_extras": horas_extras,
+            "faltas": faltas,
+            
+            "graficos": {
+                "pizza": {
+                    "labels": [item['status'] for item in status_distribuicao],
+                    "dados": [item['quantidade'] for item in status_distribuicao]
+                },
+                "barras": {
+                    "labels": labels_7_dias,
+                    "dados": ultimos_7_dias
+                },
+                "linha": {
+                    "labels": labels_7_dias,
+                    "datasets": {
+                        "horas_extras": horas_extras_7_dias,
+                        "faltas": faltas_7_dias
+                    }
+                },
+                "top_usuarios": top_usuarios_list
+            },
+            
+            "registros_tabela": {
+                "registros": registros_lista,
+                "total": len(registros_lista)
+            }
+        }
+        
+        return Response(data)
