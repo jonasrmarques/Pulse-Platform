@@ -11,3 +11,6 @@ class RegistroPontoView(LoginRequiredMixin, TemplateView):
         context["data_hoje"] = timezone.now().date()
         context["hora_atual"] = timezone.now().time()
         return context
+
+class DashboardRegistroPontoView(TemplateView):
+    template_name = "registro_ponto/dashboard.html"

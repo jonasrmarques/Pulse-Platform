@@ -1,0 +1,1138 @@
+{% extends "main/base.html" %}
+
+{% block title %}Dashboard de Ponto · TimeTracker{% endblock %}
+
+{% block extra_css %}
+<!-- AG Grid CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.5/styles/ag-grid.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.5/styles/ag-theme-quartz.min.css"/>
+
+<style>
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #a5b4fc;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark: #0f172a;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --transition: all 0.2s ease;
+}
+
+/* Reset e base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--gray-50);
+}
+
+.dashboard-wrapper {
+    padding: 1.5rem;
+    background-color: var(--gray-50);
+    min-height: 100vh;
+    width: 100%;
+}
+
+.dashboard-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+}
+
+/* Header */
+.dashboard-header {
+    background: white;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
+    width: 100%;
+}
+
+.dashboard-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+.dashboard-header h1 i {
+    color: var(--primary);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.last-update {
+    background: var(--gray-50);
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--gray-200);
+}
+
+.refresh-btn {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 30px;
+    padding: 0.5rem 1.25rem;
+    color: var(--gray-700);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+}
+
+.refresh-btn:hover {
+    background: var(--gray-50);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* LINHA 1: Cards (Big Numbers) */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.card-dashboard {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    border: 1px solid var(--gray-200);
+    position: relative;
+    overflow: hidden;
+}
+
+.card-dashboard:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
+}
+
+.card-icon {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: var(--primary);
+    display: inline-block;
+}
+
+.card-title {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--gray-500);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    line-height: 1.2;
+}
+
+.card-footer-text {
+    font-size: 0.75rem;
+    color: var(--gray-400);
+    margin-top: 0.25rem;
+}
+
+/* LINHA 2: Gráfico de Rosca e Barras lado a lado */
+.charts-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
+    width: 100%;
+}
+
+.chart-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.chart-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.chart-title i {
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 280px;
+    width: 100%;
+}
+
+/* LINHA 3: Gráfico de Linha (linha inteira) */
+.row-full {
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.chart-card-full {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
+    width: 100%;
+}
+
+.chart-container-full {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* LINHA 4: AG Grid (8) + Top 5 (4) */
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 8fr 4fr;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+/* AG Grid - Minimalista e sem espaços */
+.ag-grid-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.ag-grid-card .chart-title {
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+}
+
+.ag-theme-quartz {
+    --ag-header-background-color: white;
+    --ag-header-foreground-color: var(--gray-600);
+    --ag-header-font-weight: 500;
+    --ag-header-font-size: 12px;
+    --ag-font-size: 13px;
+    --ag-font-family: 'Inter', system-ui, sans-serif;
+    --ag-border-color: transparent;
+    --ag-row-border-color: var(--gray-100);
+    --ag-odd-row-background-color: white;
+    --ag-row-hover-color: var(--gray-50);
+    --ag-selected-row-background-color: rgba(99, 102, 241, 0.05);
+    --ag-header-column-separator-display: none;
+    --ag-header-column-resize-handle-display: none;
+    --ag-cell-horizontal-padding: 12px;
+    --ag-cell-widget-spacing: 8px;
+    --ag-wrapper-border-radius: 0;
+    --ag-border-radius: 0;
+    
+    width: 100%;
+    height: 450px;
+    flex: 1;
+}
+
+/* Remove bordas e linhas desnecessárias */
+.ag-theme-quartz .ag-header {
+    border-bottom: 1px solid var(--gray-200);
+    background: white;
+}
+
+.ag-theme-quartz .ag-row {
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.ag-theme-quartz .ag-row:last-child {
+    border-bottom: none;
+}
+
+.ag-theme-quartz .ag-cell {
+    display: flex;
+    align-items: center;
+}
+
+.ag-theme-quartz .ag-paging-panel {
+    border-top: 1px solid var(--gray-200);
+    justify-content: flex-end;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--gray-500);
+}
+
+.ag-theme-quartz .ag-paging-button {
+    color: var(--gray-600);
+}
+
+.ag-theme-quartz .ag-paging-button.ag-disabled {
+    opacity: 0.5;
+}
+
+/* Top Users Card */
+.top-users-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.top-users-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.top-user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--gray-100);
+    transition: var(--transition);
+}
+
+.top-user-item:last-child {
+    border-bottom: none;
+}
+
+.top-user-item:hover {
+    background-color: var(--gray-50);
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    margin: 0 -0.5rem;
+    border-radius: 8px;
+}
+
+.user-info-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-rank {
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 500;
+    color: var(--gray-800);
+    font-size: 0.9rem;
+}
+
+.user-email {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+}
+
+.user-count {
+    background: var(--gray-100);
+    color: var(--gray-700);
+    padding: 0.25rem 0.75rem;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.user-badge {
+    background: var(--primary);
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-left: 0.5rem;
+}
+
+/* Loading State */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+    position: relative;
+}
+
+.loading::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    z-index: 9999;
+}
+
+.loading::before {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--gray-200);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    z-index: 10000;
+}
+
+@keyframes spin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Status badges - Minimalistas */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 500;
+    text-align: center;
+    display: inline-block;
+    border: none;
+}
+
+.status-presente {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-atrasado {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+.status-ausente {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-extra {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .charts-row-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ag-theme-quartz {
+        height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-wrapper {
+        padding: 1rem;
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .chart-container {
+        height: 240px;
+    }
+    
+    .chart-container-full {
+        height: 240px;
+    }
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-dashboard, .chart-card, .chart-card-full, .ag-grid-card, .top-users-card {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-wrapper">
+    <div class="dashboard-container">
+        <!-- HEADER -->
+        <div class="dashboard-header d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-chart-pie me-2"></i>
+                Dashboard de Ponto
+            </h1>
+            <div class="header-actions">
+                <span class="last-update" id="lastUpdate">
+                    <i class="far fa-clock"></i>
+                    Atualizado agora
+                </span>
+                <button class="refresh-btn" onclick="carregarDashboard()">
+                    <i class="fas fa-sync-alt"></i>
+                    Atualizar
+                </button>
+            </div>
+        </div>
+
+        <!-- LINHA 1: BIG NUMBERS (4 cards) -->
+        <div class="cards-grid">
+            <div class="card-dashboard">
+                <div class="card-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="card-title">Total de Usuários</div>
+                <div id="totalUsuarios" class="card-value">--</div>
+                <div class="card-footer-text">ativos no sistema</div>
+            </div>
+
+            <div class="card-dashboard">
+                <div class="card-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="card-title">Registros Hoje</div>
+                <div id="registrosHoje" class="card-value">--</div>
+                <div class="card-footer-text">últimas 24h</div>
+            </div>
+
+            <div class="card-dashboard">
+                <div class="card-icon">
+                    <i class="fas fa-business-time"></i>
+                </div>
+                <div class="card-title">Horas Extras</div>
+                <div id="horasExtras" class="card-value">--</div>
+                <div class="card-footer-text">esta semana</div>
+            </div>
+
+            <div class="card-dashboard">
+                <div class="card-icon">
+                    <i class="fas fa-user-times"></i>
+                </div>
+                <div class="card-title">Faltas</div>
+                <div id="faltas" class="card-value">--</div>
+                <div class="card-footer-text">esta semana</div>
+            </div>
+        </div>
+
+        <!-- LINHA 2: GRÁFICO DE ROSCA + GRÁFICO DE BARRAS (lado a lado) -->
+        <div class="charts-row-2">
+            <!-- Gráfico de Rosca (Pizza/Doughnut) -->
+            <div class="chart-card">
+                <div class="chart-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Distribuição de Status
+                </div>
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico de Barras -->
+            <div class="chart-card">
+                <div class="chart-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Registros por Dia
+                </div>
+                <div class="chart-container">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- LINHA 3: GRÁFICO DE LINHA (linha inteira) -->
+        <div class="row-full">
+            <div class="chart-card-full">
+                <div class="chart-title">
+                    <i class="fas fa-chart-line"></i>
+                    Horas Extras vs Faltas (Últimos 7 dias)
+                </div>
+                <div class="chart-container-full">
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- LINHA 4: AG GRID (8) + TOP 5 USUÁRIOS (4) -->
+        <div class="bottom-grid">
+            <!-- AG Grid - Tabela de Registros -->
+            <div class="ag-grid-card">
+                <div class="chart-title">
+                    <i class="fas fa-table"></i>
+                    Registros de Ponto
+                    <span class="user-badge" id="totalRegistros">0 registros</span>
+                </div>
+                <div id="agGrid" class="ag-theme-quartz"></div>
+            </div>
+
+            <!-- Top 5 Usuários -->
+            <div class="top-users-card">
+                <div class="chart-title">
+                    <i class="fas fa-trophy"></i>
+                    Top 5 Usuários
+                </div>
+                <div id="topUsuarios" class="top-users-list">
+                    <div class="text-center text-muted py-4">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <span class="ms-2">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.5/dist/ag-grid-community.min.js"></script>
+
+<script>
+// Configuração global dos gráficos
+Chart.defaults.font.family = "'Inter', system-ui, -apple-system, sans-serif";
+Chart.defaults.font.size = 11;
+
+let pieChart, barChart, lineChart;
+let gridApi;
+
+// Paleta de cores
+const cores = {
+    primary: ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe'],
+    warning: '#f59e0b',
+    danger: '#ef4444'
+};
+
+// Configuração das colunas do AG Grid
+const columnDefs = [
+    { 
+        field: 'usuario', 
+        headerName: 'Usuário', 
+        width: 180,
+        cellRenderer: (params) => {
+            return `<div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-user-circle" style="color: var(--primary); font-size: 1.2rem;"></i>
+                <span style="font-weight: 500;">${params.value}</span>
+            </div>`;
+        }
+    },
+    { 
+        field: 'email', 
+        headerName: 'E-mail', 
+        width: 200,
+        cellRenderer: (params) => {
+            return `<span style="color: var(--gray-600);">${params.value}</span>`;
+        }
+    },
+    { 
+        field: 'data', 
+        headerName: 'Data', 
+        width: 120,
+        cellRenderer: (params) => {
+            return new Date(params.value).toLocaleDateString('pt-BR');
+        }
+    },
+    { 
+        field: 'entrada', 
+        headerName: 'Entrada', 
+        width: 100,
+        cellRenderer: (params) => {
+            return params.value || '--:--';
+        }
+    },
+    { 
+        field: 'saida', 
+        headerName: 'Saída', 
+        width: 100,
+        cellRenderer: (params) => {
+            return params.value || '--:--';
+        }
+    },
+    { 
+        field: 'horas_trabalhadas', 
+        headerName: 'Horas', 
+        width: 90,
+        cellRenderer: (params) => {
+            return `<span style="font-weight: 600;">${params.value}h</span>`;
+        }
+    },
+    { 
+        field: 'status', 
+        headerName: 'Status', 
+        width: 120,
+        cellRenderer: (params) => {
+            const statusClasses = {
+                'Presente': 'status-presente',
+                'Atrasado': 'status-atrasado',
+                'Ausente': 'status-ausente',
+                'Extra': 'status-extra'
+            };
+            const statusIcons = {
+                'Presente': 'fa-check-circle',
+                'Atrasado': 'fa-exclamation-circle',
+                'Ausente': 'fa-times-circle',
+                'Extra': 'fa-clock'
+            };
+            const status = params.value;
+            return `<span class="status-badge ${statusClasses[status] || 'status-presente'}">
+                <i class="fas ${statusIcons[status] || 'fa-check-circle'} me-1"></i>
+                ${status}
+            </span>`;
+        }
+    }
+];
+
+function formatarNumero(num) {
+    return new Intl.NumberFormat('pt-BR').format(num);
+}
+
+function inicializarAGGrid(dados) {
+    console.log("Dados para AG Grid:", dados);
+    
+    const gridDiv = document.querySelector('#agGrid');
+    
+    if (!gridDiv) {
+        console.error("Elemento AG Grid não encontrado!");
+        return;
+    }
+    
+    // Se não tem dados ou está vazio, mostrar mensagem
+    if (!dados || !dados.registros || dados.registros.length === 0) {
+        console.log("Sem dados para mostrar na tabela");
+        gridDiv.innerHTML = '<div class="text-center p-5">Nenhum registro encontrado</div>';
+        document.getElementById('totalRegistros').innerText = '0 registros';
+        return;
+    }
+    
+    // CORREÇÃO: Configuração minimalista com scroll infinito
+    const gridOptions = {
+        columnDefs: columnDefs,
+        rowData: dados.registros,
+        defaultColDef: {
+            sortable: true,
+            filter: false,  // Remove filtros para ficar mais clean
+            resizable: true,
+            suppressMenu: true,
+            cellStyle: { display: 'flex', alignItems: 'center' }
+        },
+        // Scroll infinito (removendo paginação)
+        pagination: false,
+        rowBuffer: 10,  // Buffer para scroll suave
+        rowModelType: 'clientSide',
+        cacheBlockSize: 50,
+        
+        // Aparência minimalista
+        rowHeight: 48,
+        headerHeight: 48,
+        animateRows: true,
+        suppressRowClickSelection: true,
+        enableCellTextSelection: true,
+        ensureDomOrder: true,
+        
+        // Remover linhas verticais
+        suppressCellFocus: true,
+        
+        onGridReady: (params) => {
+            console.log("AG Grid pronto com", dados.registros.length, "registros");
+            params.api.sizeColumnsToFit(); // Ajusta colunas para ocupar todo espaço
+        }
+    };
+
+    try {
+        if (gridApi) {
+            console.log("Atualizando grid existente");
+            gridApi.setGridOption('rowData', dados.registros);
+            gridApi.sizeColumnsToFit(); // Reajusta colunas
+        } else {
+            console.log("Criando novo grid");
+            
+            // Tentar diferentes formas de inicialização
+            if (typeof agGrid !== 'undefined' && agGrid.createGrid) {
+                gridApi = agGrid.createGrid(gridDiv, gridOptions);
+            } else if (typeof agGrid !== 'undefined' && agGrid.Grid) {
+                gridApi = new agGrid.Grid(gridDiv, gridOptions);
+            } else if (typeof window.agGrid !== 'undefined' && window.agGrid.createGrid) {
+                gridApi = window.agGrid.createGrid(gridDiv, gridOptions);
+            } else if (typeof window.agGrid !== 'undefined' && window.agGrid.Grid) {
+                gridApi = new window.agGrid.Grid(gridDiv, gridOptions);
+            } else {
+                gridApi = new agGrid.Grid(gridDiv, gridOptions);
+            }
+            
+            // Ajustar colunas após um pequeno delay para garantir que o grid renderizou
+            setTimeout(() => {
+                if (gridApi) {
+                    gridApi.sizeColumnsToFit();
+                }
+            }, 100);
+            
+            console.log("Grid criado com sucesso:", gridApi);
+        }
+        
+        document.getElementById('totalRegistros').innerText = 
+            `${dados.registros.length} registros`;
+            
+    } catch (error) {
+        console.error("Erro ao inicializar AG Grid:", error);
+        
+        gridDiv.innerHTML = `<div class="text-center p-5 text-danger">
+            <i class="fas fa-exclamation-triangle mb-3" style="font-size: 2rem;"></i>
+            <p>Erro ao carregar tabela: ${error.message}</p>
+            <button class="btn btn-sm btn-outline-primary mt-2" onclick="window.location.reload()">
+                <i class="fas fa-sync-alt me-2"></i>Tentar novamente
+            </button>
+        </div>`;
+    }
+}
+
+window.addEventListener('resize', () => {
+    if (gridApi) {
+        gridApi.sizeColumnsToFit();
+    }
+});
+
+function atualizarDashboard(data) {
+    console.log("Dados recebidos da API:", data); // Debug
+    
+    // Atualizar cards
+    document.getElementById("totalUsuarios").innerText = formatarNumero(data.total_usuarios);
+    document.getElementById("registrosHoje").innerText = formatarNumero(data.registros_hoje);
+    document.getElementById("horasExtras").innerText = formatarNumero(data.horas_extras);
+    document.getElementById("faltas").innerText = formatarNumero(data.faltas);
+
+    // Atualizar timestamp
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById("lastUpdate").innerHTML = `
+        <i class="far fa-clock"></i>
+        ${timeStr}
+    `;
+
+    // Gráfico de Rosca (Pizza)
+    if (data.graficos?.pizza) {
+        const pizzaCtx = document.getElementById('pieChart').getContext('2d');
+        
+        if (pieChart) pieChart.destroy();
+        
+        pieChart = new Chart(pizzaCtx, {
+            type: 'doughnut',
+            data: {
+                labels: data.graficos.pizza.labels,
+                datasets: [{
+                    data: data.graficos.pizza.dados,
+                    backgroundColor: cores.primary,
+                    borderWidth: 0,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 10,
+                            padding: 10,
+                            font: { size: 11 }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Gráfico de Barras
+    if (data.graficos?.barras) {
+        const barraCtx = document.getElementById('barChart').getContext('2d');
+        
+        if (barChart) barChart.destroy();
+        
+        barChart = new Chart(barraCtx, {
+            type: 'bar',
+            data: {
+                labels: data.graficos.barras.labels,
+                datasets: [{
+                    label: 'Registros',
+                    data: data.graficos.barras.dados,
+                    backgroundColor: cores.primary[0],
+                    borderRadius: 4,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // Gráfico de Linha
+    if (data.graficos?.linha) {
+        const linhaCtx = document.getElementById('lineChart').getContext('2d');
+        
+        if (lineChart) lineChart.destroy();
+        
+        lineChart = new Chart(linhaCtx, {
+            type: 'line',
+            data: {
+                labels: data.graficos.linha.labels,
+                datasets: [
+                    {
+                        label: 'Horas Extras',
+                        data: data.graficos.linha.datasets.horas_extras,
+                        borderColor: cores.warning,
+                        backgroundColor: 'rgba(245, 158, 11, 0.05)',
+                        borderWidth: 3,
+                        pointBackgroundColor: cores.warning,
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Faltas',
+                        data: data.graficos.linha.datasets.faltas,
+                        borderColor: cores.danger,
+                        backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                        borderWidth: 3,
+                        pointBackgroundColor: cores.danger,
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { 
+                            boxWidth: 12,
+                            padding: 15,
+                            usePointStyle: true
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { display: false  }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // AG Grid com TODOS os registros
+    if (data.registros_tabela) {
+        inicializarAGGrid(data.registros_tabela);
+    } else {
+        console.warn("registros_tabela não encontrado nos dados");
+        // Criar dados mock para teste
+        const mockData = {
+            registros: [
+                {
+                    usuario: "Usuário Teste",
+                    email: "teste@email.com",
+                    data: new Date().toISOString(),
+                    entrada: "09:00",
+                    saida: "18:00",
+                    horas_trabalhadas: "8",
+                    status: "Presente"
+                }
+            ]
+        };
+        inicializarAGGrid(mockData);
+    }
+
+    // Top Usuários
+    if (data.graficos?.top_usuarios) {
+        const topUsuariosHtml = data.graficos.top_usuarios.map((user, index) => {
+            const medalhas = ['🥇', '🥈', '🥉'];
+            const medalha = index < 3 ? medalhas[index] : '';
+            
+            return `
+                <li class="top-user-item">
+                    <div class="user-info-wrapper">
+                        <span class="user-rank">${medalha || index + 1}</span>
+                        <div class="user-info">
+                            <span class="user-name">
+                                ${user.nome}
+                                ${index === 0 ? '<span class="user-badge">TOP 1</span>' : ''}
+                            </span>
+                            <span class="user-email">${user.email}</span>
+                        </div>
+                    </div>
+                    <span class="user-count">${formatarNumero(user.total)}</span>
+                </li>
+            `;
+        }).join('');
+        
+        document.getElementById('topUsuarios').innerHTML = 
+            topUsuariosHtml || '<div class="text-center text-muted py-4">Nenhum registro encontrado</div>';
+    }
+}
+
+function carregarDashboard() {
+    const wrapper = document.querySelector('.dashboard-wrapper');
+    wrapper.classList.add('loading');
+    
+    fetch("/api-registro-ponto/dashboard/")
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            console.log("Dados completos recebidos:", data);
+            atualizarDashboard(data);
+            wrapper.classList.remove('loading');
+        })
+        .catch(err => {
+            console.error("Erro ao carregar dados:", err);
+            wrapper.classList.remove('loading');
+            
+            // Mostrar mensagem de erro
+            const gridDiv = document.querySelector('#agGrid');
+            if (gridDiv) {
+                gridDiv.innerHTML = '<div class="text-center text-danger p-5">Erro ao carregar dados. Verifique o console.</div>';
+            }
+        });
+}
+
+// Inicializar
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("DOM carregado, iniciando dashboard...");
+    
+    // Verificar se AG Grid está disponível
+    console.log("AG Grid disponível:", typeof agGrid !== 'undefined' ? "Sim" : "Não");
+    if (typeof agGrid !== 'undefined') {
+        console.log("Métodos AG Grid:", Object.keys(agGrid));
+    }
+    
+    carregarDashboard();
+});
+
+</script>
+{% endblock %}
