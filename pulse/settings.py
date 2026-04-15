@@ -12,12 +12,33 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 import os
+from urllib.parse import parse_qsl, unquote, urlparse
+
 from dotenv import load_dotenv
-import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
+
+
+def _database_from_url(url: str) -> dict:
+    """Parse DATABASE_URL (postgres) without dj-database-url."""
+    parsed = urlparse(url)
+    scheme = (parsed.scheme or "").lower()
+    if scheme not in ("postgres", "postgresql"):
+        raise ValueError(f"Unsupported DATABASE_URL scheme: {scheme!r}")
+    query = dict(parse_qsl(parsed.query))
+    cfg = {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": unquote(parsed.path.lstrip("/")),
+        "USER": unquote(parsed.username) if parsed.username else "",
+        "PASSWORD": unquote(parsed.password) if parsed.password else "",
+        "HOST": parsed.hostname or "",
+        "PORT": str(parsed.port) if parsed.port else "",
+    }
+    if query:
+        cfg["OPTIONS"] = query
+    return cfg
 
 
 # Quick-start development settings - unsuitable for production
@@ -101,9 +122,16 @@ WSGI_APPLICATION = 'pulse.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 
-DATABASES = {
-    'default': dj_database_url.config()
-}
+_database_url = os.getenv("DATABASE_URL")
+if _database_url:
+    DATABASES = {"default": _database_from_url(_database_url)}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 
