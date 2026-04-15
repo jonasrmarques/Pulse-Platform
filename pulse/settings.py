@@ -48,9 +48,22 @@ def _database_from_url(url: str) -> dict:
 SECRET_KEY = 'django-insecure-_wc9vgy7ym!xojtg!7k5$+-ozjl3ba@mxr9mknd%xsk6b#lhd9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# No Render: defina DEBUG=False nas variáveis de ambiente.
+DEBUG = os.getenv("DEBUG", "True").lower() in ("1", "true", "yes")
 
-ALLOWED_HOSTS = ['pulse-platform-ayif.onrender.com']
+ALLOWED_HOSTS = [
+    "pulse-platform-ayif.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
+
+# Atrás de proxy HTTPS (Render)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+if not DEBUG:
+    CSRF_TRUSTED_ORIGINS = [
+        "https://pulse-platform-ayif.onrender.com",
+    ]
 
 
 # Application definition
@@ -184,5 +197,15 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+# Gunicorn não serve estáticos; WhiteNoise entrega o que collectstatic colocou em STATIC_ROOT.
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
