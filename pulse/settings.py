@@ -50,7 +50,7 @@ SECRET_KEY = 'django-insecure-_wc9vgy7ym!xojtg!7k5$+-ozjl3ba@mxr9mknd%xsk6b#lhd9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['pulse-platform-ayif.onrender.com']
 
 
 # Application definition
