@@ -169,9 +169,17 @@ TIME_ZONE = "America/Sao_Paulo"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
+#
+# BASE_DIR/static/ (desenvolvimento, versionado no git)
+#   main/           — CSS/JS do projeto
+#   vendor/         — bibliotecas de terceiros
+#     bootstrap-5.3.8/
+#     fontawesome/
+#
+# BASE_DIR/staticfiles/ — saída de `collectstatic` (produção; não versionar)
 
 STATIC_URL = '/static/'
-
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
